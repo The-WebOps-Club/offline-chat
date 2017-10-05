@@ -8,21 +8,24 @@
    <script src="/socket.io/socket.io.js"></script>
    <script src="https://code.jquery.com/jquery-latest.min.js"></script>﻿
    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <!doctype html>
-<html>
- <head>
-   <meta charset="UTF-8">    
-   <title>Socket.IO chat</title>
-   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-   <!-- Importing all JS files -->
-   <script src="/socket.io/socket.io.js"></script>
-   <script src="https://code.jquery.com/jquery-latest.min.js"></script>﻿
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <style>
     body{
       margin-top: 20px;
     }
     #messageArea{
+      display: none;
+    }
+    #RoomName{
+      display: none;
+    }
+    #chatArea{
+      border: 2px solid green;
+      padding: 12px;
+    }
+    #roomForm{
+      display: none;
+    }
+    #ExitRoom{
       display: none;
     }
   </style>
@@ -36,18 +39,25 @@
           <input type="submit" class="btn btn-primary" value="Login"/>
         </form>
       </div>
+      <div class="row" >
+        <input  class="pull-right" id="ExitRoom" type="button" value="Leave the Room"/>
+        <input  class="pull-right" id="roomForm" type="button" value="Click Here to Join any Room"/>
+      </div>
+      <div class="header" id="RoomName">
+      </div>
+      <br>
       <div id="messageArea" class="row">
         <div id="userArea" class="col-md-4">
           <div class="well">
             <h3>Online Users</h3>
             <ul class="list-group" id="users"></ul>
           </div>
-          <div class="active rooms">
+          <!-- <div class="active rooms">
             <h3>Rooms</h3>
             <ul class="list-of-rooms" id="rooms"></ul>
-          </div>
+          </div> -->
         </div>
-        <div class="col-md-8">
+        <div class="col-md-8" id="chatArea">
           <div class="chat" id="chat">
           </div>
           <form id="messageForm">
@@ -73,16 +83,31 @@
       var $chat = $('#chat');
       var $userFormArea = $('#userFormArea');
       var $username = $('#username');
+      var $roomname = $('#room');
+      var $roomForm =  $('#roomForm');
+      var $ExitRoom = $('#ExitRoom');
+      var currentUser ;
       $userForm.submit(function(e){
         e.preventDefault();
         socket.emit('new user',$username.val(),function(data){
           if(data){
             $userFormArea.hide();
             $messageArea.show();
+            $roomForm.show();
           }
         });
+        currentUser = $username.val();
         $username.val('');
       });
+
+      $roomForm.click(function(){
+        var room  = prompt("Enter any room name to Join!");
+        console.log(room+"Entered");
+        if(room){
+          socket.emit("setRoom",room);
+        }
+      });
+
       socket.on('get users',function(data){
         var html = '';
         for(i=0;i<data.length;i++){
@@ -91,22 +116,29 @@
         $users.html(html);
       });
 
-      socket.on('updaterooms', function(rooms, current_room) {
-      $('#rooms').empty();
-      $.each(rooms, function(key, value) {
-        if(value == current_room){
-          $('#rooms').append('<div>' + value + '</div>');
-        }
-        else {
-          $('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
-        }
-      });
-    });
 
-      function switchRoom(room){
-        socket.emit('switchRoom', room);
-      }
-  
+      $ExitRoom.click(function(){
+        var newroom = prompt('Enter a new Room to join');
+        if(newroom!=null)
+          socket.emit('switchRoom',newroom);
+      })
+
+      socket.on('connectToRoom',function(data){
+        alert(data.msg);
+        $('#RoomName').show();
+        $('#RoomName').empty();
+        $('#RoomName').append("<h3>ChatRoom: "+data.room+"</h3>");
+        $users.empty();
+        $chat.empty();
+        $chat.append('<div class="well"><label>'+data.user+':'+'</label><br>'+data.income_msg+'</div>');
+        var html = '';
+          // for(i=0;i<data.members.length;i++){
+          //   html+='<li class="list-group-item">'+data.members[i]+'</li>';
+          // }
+        $users.html(html);
+        $roomForm.hide();
+        $ExitRoom.show();
+      })
 
       $messageForm.submit(function(e){
         e.preventDefault();
@@ -115,7 +147,10 @@
         $message.val('');
       });
       socket.on('new message',function(data){
-        $chat.append('<div class="well"><label>'+data.user+':'+'</label>'+data.msg+'</div>');
+        if(data.user===currentUser)
+            $chat.append('<div class="well"><label style="text-align: right;">You</label><br>'+data.msg+'</div>');
+        else
+            $chat.append('<div class="well"><label>'+data.user+':'+'</label><br>'+data.msg+'</div>');
       });
     });
   </script>
