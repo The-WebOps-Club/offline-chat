@@ -8,8 +8,10 @@ app.get('/', function(req, res){
 });
 
 users = [];
+TempUsers = [];
 connections = [];
 messages = ["Chat room Started"];
+
 // rooms which are currently available in chat
 var rooms = ['room1','room2','room3'];
 
@@ -24,8 +26,9 @@ io.sockets.on('connection', function(socket){
   socket.on('disconnect', function(data){
 
     if(socket.username){
-      users.splice(users.indexOf(socket.username),1);
-      updateUsernames();
+      users[socket.id]=null;
+      TempUsers.splice(TempUsers.indexOf(socket.username),1);
+      updateUsernames(socket.room);
     }
     connections.splice(connections.indexOf(socket),1);
     console.log('Disconnected: %s sockets connected',connections.length);
@@ -42,7 +45,7 @@ io.sockets.on('connection', function(socket){
     if(socket.room){
       io.sockets.in(socket.room).emit('new message',{msg: data, user: socket.username});      
     }else{
-      io.sockets.emit('new message',{msg: data, user: socket.username});
+      // io.sockets.emit('new message',{msg: data, user: socket.username});
     }
  
   });
@@ -52,49 +55,58 @@ io.sockets.on('connection', function(socket){
     socket.room = data;
     socket.join(data);
     console.log(socket.username+" joined " +data+" room");
-    var joined = "'"+socket.username+"'" + ' joined the room!';
-    var members = io.sockets.adapter.rooms[data];
-    console.log(members.length);
-    var otherUsers = [];
-    var room_members = [];
+    updateRooms(socket,socket.username,socket.room);
 
-    // io.of('/').in(data).clients(function(error,clients){
-    // var otherUsers = [];
-    //             for(var i in clients){
-    //                     if(socket.id != clients[i]) otherUsers.push(io.sockets.connected[clients[i]]);
-    //             }
-    //             console.log(otherUsers);
-    //             // var userSummary = 'Users Currently in ' + room + ' are : ' + otherUsers.join(', ') + '.';
-    //             // socket.emit('message',{text:userSummary});
-    // });
-    // members.forEach(function(client) {
-    //   console.log('Username: ' + client.username);
-    // });
-    io.sockets.in(socket.room).emit('new message',{msg:joined,user: "SERVER"});
-    socket.emit('connectToRoom', {msg:"You successfully joined: "+socket.room+"!", income_msg:"Hey, Welcome to "+socket.room+"!", user: "SERVER", room: socket.room, members: this.otherUsers});
   })
   
   //send username
   socket.on('new user',function(data, callback){
     callback(true);
     socket.username = data;
-    users.push(socket.username);
-    updateUsernames();
+    users[socket.id] = (socket.username);
+    TempUsers.push(socket.username);
+    updateUsernames(socket.room);
   });
 
   socket.on('switchRoom', function(newroom){
     socket.leave(socket.room);
+    var oldroom = socket.room;
     socket.join(newroom);
     // sent message to OLD room
-    socket.broadcast.to(socket.room).emit('new message',{msg: socket.username+' has left this room', user: 'SERVER'});
+    socket.broadcast.to(oldroom).emit('new message',{msg: socket.username+' has left this room', user: 'SERVER'});
+    io.of('/').in(oldroom).clients(function(error,clients){
+          var room_members = [];
+                for(var i in clients){
+                      if(users[clients[i]]!=null)
+                        room_members.push(users[clients[i]]);
+                }
+          console.log(room_members+"After left");      
+          socket.broadcast.to(oldroom).emit('get users',room_members);
+    });
     // update socket session room title
     socket.room = newroom;
-    socket.broadcast.to(newroom).emit('new message',{msg: socket.username+' has joined this room', user: 'SERVER'});
-    socket.emit('connectToRoom', {msg:"You successfully joined: "+socket.room+"!", income_msg:"Hey, Welcome to "+socket.room+"!", user: "SERVER", room: socket.room});
+    updateRooms(socket,socket.username,newroom);
   });
 
 });
 
-function updateUsernames(){
-  io.sockets.emit('get users',users);
+function updateRooms(socket,username,room){
+    var members = io.sockets.adapter.rooms[room];
+    console.log(members.length+" members are in"+room);
+    io.of('/').in(room).clients(function(error,clients){
+          var room_members = [];
+                for(var i in clients){
+                      if(users[clients[i]]!=null)
+                        room_members.push(users[clients[i]]);
+                }
+          console.log(room_members+" List of members in "+ room);
+          socket.broadcast.to(room).emit('new message',{msg: "'"+username+"'" + ' joined the room!',user: "SERVER"});
+          socket.emit('connectToRoom', {msg:"You successfully joined: "+room+"!", income_msg:"Hey, Welcome to "+room+"!", user: "SERVER", room: room });
+          io.sockets.in(room).emit('get users',room_members);
+    });
+}
+
+function updateUsernames(room){
+  if(room!=null)
+    io.sockets.in(room).emit('get users',TempUsers);
 }

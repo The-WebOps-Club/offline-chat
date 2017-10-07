@@ -24,9 +24,14 @@
     }
     #roomForm{
       display: none;
+      float: right;
+      margin: 12px;
     }
     #ExitRoom{
       display: none;
+      float: right;
+      margin: 12px;
+
     }
   </style>
   </head>
@@ -40,10 +45,11 @@
         </form>
       </div>
       <div class="row" >
-        <input  class="pull-right" id="ExitRoom" type="button" value="Leave the Room"/>
-        <input  class="pull-right" id="roomForm" type="button" value="Click Here to Join any Room"/>
-      </div>
-      <div class="header" id="RoomName">
+        <div class="col-md-4">
+          <h3 id='RoomName'></h3>
+        </div>
+        <input  class="btn btn-danger" id="ExitRoom" type="button" value="Leave the Room"/>
+        <input  class="btn btn-primary" id="roomForm" type="button" value="Click Here to Join any Room"/>
       </div>
       <br>
       <div id="messageArea" class="row">
@@ -52,10 +58,6 @@
             <h3>Online Users</h3>
             <ul class="list-group" id="users"></ul>
           </div>
-          <!-- <div class="active rooms">
-            <h3>Rooms</h3>
-            <ul class="list-of-rooms" id="rooms"></ul>
-          </div> -->
         </div>
         <div class="col-md-8" id="chatArea">
           <div class="chat" id="chat">
@@ -87,6 +89,7 @@
       var $roomForm =  $('#roomForm');
       var $ExitRoom = $('#ExitRoom');
       var currentUser ;
+
       $userForm.submit(function(e){
         e.preventDefault();
         socket.emit('new user',$username.val(),function(data){
@@ -110,7 +113,11 @@
 
       socket.on('get users',function(data){
         var html = '';
+        console.log(data);
         for(i=0;i<data.length;i++){
+          if(data[i]===currentUser){
+            data[i]="You";
+          }
           html+='<li class="list-group-item">'+data[i]+'</li>';
         }
         $users.html(html);
@@ -127,15 +134,9 @@
         alert(data.msg);
         $('#RoomName').show();
         $('#RoomName').empty();
-        $('#RoomName').append("<h3>ChatRoom: "+data.room+"</h3>");
-        $users.empty();
+        $('#RoomName').append("ChatRoom: "+data.room);
         $chat.empty();
         $chat.append('<div class="well"><label>'+data.user+':'+'</label><br>'+data.income_msg+'</div>');
-        var html = '';
-          // for(i=0;i<data.members.length;i++){
-          //   html+='<li class="list-group-item">'+data.members[i]+'</li>';
-          // }
-        $users.html(html);
         $roomForm.hide();
         $ExitRoom.show();
       })
@@ -146,9 +147,10 @@
         socket.emit('send message',$message.val());
         $message.val('');
       });
+
       socket.on('new message',function(data){
         if(data.user===currentUser)
-            $chat.append('<div class="well"><label style="text-align: right;">You</label><br>'+data.msg+'</div>');
+            $chat.append('<div class="well"><label>You:</label><br>'+data.msg+'</div>');
         else
             $chat.append('<div class="well"><label>'+data.user+':'+'</label><br>'+data.msg+'</div>');
       });
