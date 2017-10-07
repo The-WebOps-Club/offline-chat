@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "my first socket.io app",
   "dependencies": {
-    "socket.io": "^2.0.3"
+    "bootstrap": "^4.0.0-alpha.6",
+    "jquery": "^3.2.1",
+    "socket.io": "^2.0.3",
+    "tether": "^1.4.0"
   }
 }

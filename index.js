@@ -7,6 +7,8 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+app.use('/scripts', express.static(__dirname + '/node_modules/'));
+app.use('/',express.static(__dirname+'/'))
 queue = [];
 users = [];
 TempUsers = [];
