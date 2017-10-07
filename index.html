@@ -1,16 +1,22 @@
 <!doctype html>
 <html>
  <head>
-   <meta charset="UTF-8">    
+   <meta charset="UTF-8"> 
+   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">   
    <title>Socket.IO chat</title>
    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">   
    <!-- Importing all JS files -->
    <script src="/socket.io/socket.io.js"></script>
-   <script src="https://code.jquery.com/jquery-latest.min.js"></script>﻿
-   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
   <style>
     body{
       margin-top: 20px;
+    }
+    #WelcomeArea{
+      display: none;
     }
     #messageArea{
       display: none;
@@ -22,16 +28,29 @@
       border: 2px solid green;
       padding: 12px;
     }
-    #roomForm{
-      display: none;
-      float: right;
-      margin: 12px;
-    }
     #ExitRoom{
       display: none;
       float: right;
       margin: 12px;
-
+    }
+    #ExitChat{
+      display: none;
+      float: right;
+      margin: 12px;
+    }
+    #ChatName{
+      display: none;
+    }
+    #SwitchRoom{
+      display: none;
+      float: right;
+      margin: 12px;
+    }
+    #error{
+      color: red;
+      display: none;
+      margin-top: 8px;
+      margin-bottom: 4px;
     }
   </style>
   </head>
@@ -40,16 +59,30 @@
       <div class="form-group" id="userFormArea">
         <form id="userForm">
           <input type="text" id="username" class="form-control" placeholder="Enter Username"/>
+          <p id="error"></p>
           <br>
           <input type="submit" class="btn btn-primary" value="Login"/>
         </form>
       </div>
+
+      <div class="card" id="WelcomeArea">
+        <h3 class="card-header">IITM CHAT BOT</h3>
+        <div class="card-block">
+          <h4 class="card-title">Welcome to our CHAT Application!</h4> 
+          <p class="card-text">Click what you wanna do!</p>
+          <input  class="btn btn-primary" id="ChatForm" type="button" value="Talk to a Stranger!"/>
+          <input  class="btn btn-primary" id="roomForm" type="button" value="create or Join any Room"/>
+        </div>
+      </div>
+               
       <div class="row" >
         <div class="col-md-4">
           <h3 id='RoomName'></h3>
+          <h3 id="ChatName"></h3>
         </div>
-        <input  class="btn btn-danger" id="ExitRoom" type="button" value="Leave the Room"/>
-        <input  class="btn btn-primary" id="roomForm" type="button" value="Click Here to Join any Room"/>
+        <input  class="btn btn-danger" id="SwitchRoom" type="button" value="Switch to new Room"/>
+        <input  class="btn btn-danger" id="ExitRoom" type="button" value="Leave and GO home"/>
+        <input  class="btn btn-danger" id="ExitChat" type="button" value="End Chat"/>
       </div>
       <br>
       <div id="messageArea" class="row">
@@ -85,18 +118,30 @@
       var $chat = $('#chat');
       var $userFormArea = $('#userFormArea');
       var $username = $('#username');
-      var $roomname = $('#room');
       var $roomForm =  $('#roomForm');
       var $ExitRoom = $('#ExitRoom');
       var currentUser ;
+      var $ExitChat = $('#ExitChat');
+      var $ChatForm = $('#ChatForm');
+      var $WelcomeArea = $('#WelcomeArea');
+      var $ChatName = $('#ChatName');
+      var $RoomName = $('#RoomName');
+      var $SwitchRoom = $('#SwitchRoom');
+      var $error = $('#error');
 
       $userForm.submit(function(e){
         e.preventDefault();
         socket.emit('new user',$username.val(),function(data){
-          if(data){
+          if(!(data==='')){
+            $error.empty();
+            $error.hide();
             $userFormArea.hide();
-            $messageArea.show();
-            $roomForm.show();
+            $WelcomeArea.show();
+            // $messageArea.show();
+            // $roomForm.show();
+          }else{
+            $error.show();
+            $error.append("**Username cannot be Empty");
           }
         });
         currentUser = $username.val();
@@ -111,6 +156,32 @@
         }
       });
 
+      $ChatForm.click(function(){
+        $chat.empty(); 
+        $ChatName.empty();
+        $ChatName.show();
+        $ChatName.append("Anonymous Chat!");
+        socket.emit('start chat',true);
+        $messageArea.show();
+        $WelcomeArea.hide();
+        $ExitChat.show();
+      });
+
+      socket.on('same username',function(data){
+        $username.val('');
+        $error.show();
+        $error.append(data);
+      })
+      socket.on('ChatEnded',function(data){
+        alert(data.user+": "+data.msg);
+        socket.emit('leave chat',true);
+        $ExitChat.hide();
+        $ChatName.empty();
+        $ChatName.hide();
+        $messageArea.hide(); 
+        $WelcomeArea.show();
+      });
+
       socket.on('get users',function(data){
         var html = '';
         console.log(data);
@@ -123,23 +194,43 @@
         $users.html(html);
       });
 
-
       $ExitRoom.click(function(){
-        var newroom = prompt('Enter a new Room to join');
-        if(newroom!=null)
+        var res  = confirm('Are you sure to leave the room?');
+        if(res){
+          $ExitRoom.hide();
+          $messageArea.hide();
+          $WelcomeArea.show();
+          $chat.empty();
+          $RoomName.empty();
+          $RoomName.hide();
+          $roomForm.show();
+          $SwitchRoom.hide();
+          socket.emit('LeaveRoom',true);
+        }
+      });
+
+      $SwitchRoom.click(function(data){
+        var newroom = prompt('Wanna Switch to a new Room! ,Enter a new Room to join');
+        if(newroom!=null){
           socket.emit('switchRoom',newroom);
-      })
+          $SwitchRoom.show();
+          $ExitRoom.show();
+        }
+      });
 
       socket.on('connectToRoom',function(data){
         alert(data.msg);
+        $SwitchRoom.show();
         $('#RoomName').show();
         $('#RoomName').empty();
         $('#RoomName').append("ChatRoom: "+data.room);
         $chat.empty();
         $chat.append('<div class="well"><label>'+data.user+':'+'</label><br>'+data.income_msg+'</div>');
         $roomForm.hide();
+        $WelcomeArea.hide();
         $ExitRoom.show();
-      })
+        $messageArea.show();
+      });
 
       $messageForm.submit(function(e){
         e.preventDefault();
@@ -148,7 +239,31 @@
         $message.val('');
       });
 
+      $ExitChat.click(function(){
+        socket.emit('leave chat',true);
+        $ExitChat.hide();
+        $ChatName.empty();
+        $ChatName.hide();
+        // $messageArea.load(document.URL + "#messageArea");
+        $messageArea.hide(); 
+        $WelcomeArea.show();
+ 
+      });
+
+      // socket.on('refreshChat',function(data){
+      //   if(data){
+
+      //   }
+        
+      // })
       socket.on('new message',function(data){
+        if(data.status!=null){
+          if(data.status==="private_chat"){
+              if(!(data.user===currentUser))
+                   data.user="Stranger";
+          } 
+        }
+        
         if(data.user===currentUser)
             $chat.append('<div class="well"><label>You:</label><br>'+data.msg+'</div>');
         else
