@@ -18,6 +18,17 @@
     #WelcomeArea{
       display: none;
     }
+  	h1 {
+    font-size: 4em; 
+    text-align:center;
+    font-weight:bold;
+    font-style: italic;
+    color: White;
+	}
+	/*#title
+	{
+		background-color: blue;
+	}*/
     #messageArea{
       display: none;
     }
@@ -38,6 +49,14 @@
       float: right;
       margin: 12px;
     }
+    #ChatForm{
+      margin: 8px;
+      float: left;
+    }
+    #roomForm{
+      margin: 8px;
+      float: right;
+    }
     #ChatName{
       display: none;
     }
@@ -52,24 +71,67 @@
       margin-top: 8px;
       margin-bottom: 4px;
     }
+    .loginpage{
+      width:1100px;
+    }
+    .image {
+      width:600px;
+      float:left;
+    }
+    .form-group {
+      width:500px;
+      float:right;
+      border: 2px solid green;
+      padding: 25px;
+      margin: 25px;
+}
+      
+    }
   </style>
   </head>
   <body>
     <div class="container">
-      <div class="form-group" id="userFormArea">
+<!-- <<<<<<< HEAD
+      <div class="form-group" >
         <form id="userForm">
           <input type="text" id="username" class="form-control" placeholder="Enter Username"/>
           <p id="error"></p>
           <br>
           <input type="submit" class="btn btn-primary" value="Login"/>
         </form>
+======= -->
+      <div style="width=1500px; height=300px; background-color: Purple;">
+      	<br>
+      	<h1 > OFFLINE CHAT APPLICATION </h1>
+      	<br>
+      </div>
+      <div class="loginpage">
+      	<div class="image">
+      		<img src="/home.jpg" alt="Cinque Terre" style="width:304px;height:228px;">
+      	</div>	
+      	<div class="form-group" id="userFormArea">
+      	    <br>
+      	    <br>
+      	    <br>
+      		<h2> LOG IN </h2>
+      		<br>
+        	<form id="userForm">
+        	Username: 	
+          	<input type="text" id="username" class="form-control" placeholder="Enter Username"/>
+          	<br>
+          	<input type="submit" class="btn btn-primary" value="Login"/>
+          	<br>
+          	<br>
+          	<br>
+        	</form>
+      	</div>
       </div>
 
       <div class="card" id="WelcomeArea">
         <h3 class="card-header">IITM CHAT BOT</h3>
         <div class="card-block">
-          <h4 class="card-title">Welcome to our CHAT Application!</h4> 
-          <p class="card-text">Click what you wanna do!</p>
+          <h4 class="card-title">Welcome to our OFFLINE CHAT Application!</h4> 
+          <strong class="card-text">Click what you wanna do!</strong>
           <input  class="btn btn-primary" id="ChatForm" type="button" value="Talk to a Stranger!"/>
           <input  class="btn btn-primary" id="roomForm" type="button" value="create or Join any Room"/>
         </div>
