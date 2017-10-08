@@ -3,15 +3,25 @@
  <head>
    <meta charset="UTF-8">    
    <title>Socket.IO chat</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
    <!-- Importing all JS files -->
    <script src="/socket.io/socket.io.js"></script>
    <script src="https://code.jquery.com/jquery-latest.min.js"></script>﻿
    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <style>
-    body{
-      margin-top: 20px;
-    }
+  	h1 {
+    font-size: 4em; 
+    text-align:center;
+    font-weight:bold;
+    font-style: italic;
+    color: White;
+	}
+	/*#title
+	{
+		background-color: blue;
+	}*/
     #messageArea{
       display: none;
     }
@@ -33,16 +43,51 @@
       margin: 12px;
 
     }
+    .loginpage{
+      width:1100px;
+    }
+    .image {
+      width:600px;
+      float:left;
+    }
+    .form-group {
+      width:500px;
+      float:right;
+      border: 2px solid green;
+      padding: 25px;
+      margin: 25px;
+}
+      
+    }
   </style>
   </head>
   <body>
     <div class="container">
-      <div class="form-group" id="userFormArea">
-        <form id="userForm">
-          <input type="text" id="username" class="form-control" placeholder="Enter Username"/>
-          <br>
-          <input type="submit" class="btn btn-primary" value="Login"/>
-        </form>
+      <div style="width=1500px; height=300px; background-color: Purple;">
+      	<br>
+      	<h1 > OFFLINE CHAT APPLICATION </h1>
+      	<br>
+      </div>
+      <div class="loginpage">
+      	<div class="image">
+      		<img src="home.jpg" alt="Cinque Terre" style="width:304px;height:228px;">
+      	</div>	
+      	<div class="form-group" id="userFormArea">
+      	    <br>
+      	    <br>
+      	    <br>
+      		<h2> LOG IN </h2>
+      		<br>
+        	<form id="userForm">
+        	Username: 	
+          	<input type="text" id="username" class="form-control" placeholder="Enter Username"/>
+          	<br>
+          	<input type="submit" class="btn btn-primary" value="Login"/>
+          	<br>
+          	<br>
+          	<br>
+        	</form>
+      	</div>
       </div>
       <div class="row" >
         <div class="col-md-4">
