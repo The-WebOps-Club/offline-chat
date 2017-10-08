@@ -188,7 +188,7 @@ function findPeerForLoneSocket(socket) {
         // somebody is in queue, pair them!
           var peer = queue.pop();
 
-          if(peer.chatStatus===private_chat){
+          if(peer.chatStatus===private_chat && peer.id!=socket.id){
             console.log("pairing");
             if(peer.id!=null){
               var room = socket.id + '#' + peer.id;
@@ -201,8 +201,8 @@ function findPeerForLoneSocket(socket) {
               // start the chat
               io.sockets.in(room).emit('new message',{msg: Invite_msg, user: "SERVER",status: gen });      
 
-              // var members = [users[socket.id],users[peer.id]];
-              var members = ["You",'stranger'];
+              var members = [users[socket.id],users[peer.id]];
+              // var members = ["You",'stranger'];
               console.log(members+"Connected stranger");
               // peer.emit('new message',{msg: Invite_msg, user: "SERVER"} );
               // socket.emit('new message', {name: users[peer.id], msg: Invite_msg, room:room});
@@ -212,7 +212,7 @@ function findPeerForLoneSocket(socket) {
             console.log("No users online "+queue.length);
             var members = ["You"];
             socket.emit('get users',members);
-            socket.emit('new message',{msg:"Sorry, there are no users online now!,Please wait", user:"SERVER", status: gen});
+            socket.emit('new message',{msg:"Sorry, there are no users online now!,End the chat and come again", user:"SERVER", status: gen});
             queue.push(socket);
           }
 
